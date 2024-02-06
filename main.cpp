@@ -3,6 +3,7 @@
 #include <stack>
 #include <format>
 #include <unordered_set>
+#include <queue>
 
 /**
  * @struct State
@@ -40,12 +41,12 @@ struct StateHash {
         size_t h2 = std::hash<int>{}(s.leftCannibals);
         size_t h3 = std::hash<int>{}(s.rightMissionaries);
         size_t h4 = std::hash<int>{}(s.rightCannibals);
-        size_t h5 = std::hash<int>{}(s.boatOnLeft);
+        size_t h5 = s.boatOnLeft ? 1 : 0;
         return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3) ^ (h5 << 4);
     }
 };
 
-bool isSafe(State state);
+bool isSafe(const State &state);
 
 std::vector<State> getValidMoves(State currentState);
 
@@ -57,8 +58,20 @@ int main(int argc, char **argv) {
     switch (argc) {
         case 3:
             initialState.leftCannibals = std::stoi(argv[2]);
+
+            if (initialState.leftCannibals < 0) {
+                std::cout << "Cannibal count cannot be negative." << std::endl;
+                return 1;
+            }
+
+            // No break to allow for fall through
         case 2:
             initialState.leftMissionaries = std::stoi(argv[1]);
+
+            if (initialState.leftMissionaries < 0) {
+                std::cout << "Missionary count cannot be negative." << std::endl;
+                return 1;
+            }
             break;
         default:
             initialState.leftMissionaries = 3;
@@ -84,7 +97,7 @@ int main(int argc, char **argv) {
  * @param state The state of the missionary and cannibal problem.
  * @return True if the state is safe, false otherwise.
  */
-bool isSafe(State state) {
+bool isSafe(const State &state) {
     // On both sides of river, if there are any missionaries, they don't get outnumbered and eaten by cannibals
     return (!(state.leftMissionaries != 0 && state.leftMissionaries < state.leftCannibals) &&
             !(state.rightMissionaries != 0 && state.rightMissionaries < state.rightCannibals));
@@ -114,7 +127,7 @@ std::vector<State> getValidMoves(State currentState) {
                     newState.rightCannibals += c;
                     newState.boatOnLeft = false;
                     if (isSafe(newState)) {
-                        moves.push_back(newState);
+                        moves.emplace_back(newState);
                     }
                 }
             }
@@ -130,7 +143,7 @@ std::vector<State> getValidMoves(State currentState) {
                     newState.rightCannibals -= c;
                     newState.boatOnLeft = true;
                     if (isSafe(newState)) {
-                        moves.push_back(newState);
+                        moves.emplace_back(newState);
                     }
                 }
             }
@@ -143,7 +156,7 @@ std::vector<State> getValidMoves(State currentState) {
 /**
  * @brief Solves the Missionaries and Cannibals problem.
  *
- * This function takes an initial state of the problem and solves it using a depth-first search algorithm.
+ * This function takes an initial state of the problem and solves it using a breadth-first search algorithm.
  * It explores the states of the problem and checks if the goal state has been reached.
  * If the goal state is reached, it returns true. Otherwise, it returns false.
  *
@@ -152,7 +165,8 @@ std::vector<State> getValidMoves(State currentState) {
  */
 bool solveMissionariesCannibals(State initialState) {
     std::unordered_set<State, StateHash> exploredStates;
-    std::stack<State> statesToExplore;
+
+    std::queue<State> statesToExplore;
     statesToExplore.push(initialState);
 
     std::string stateString = "Current State: \n"
@@ -160,11 +174,14 @@ bool solveMissionariesCannibals(State initialState) {
                               "\tCannibals on the left: {}\n"
                               "\tMissionaries on the right: {}\n"
                               "\tCannibals on the right: {}\n"
-                              "Boat on the left: {}\n";
+                              "\tBoat on the left: {}\n";
 
     while (!statesToExplore.empty()) {
-        State currentState = statesToExplore.top();
+        State currentState = statesToExplore.front();
         statesToExplore.pop();
+
+        if (exploredStates.find(currentState) != exploredStates.end()) { continue; }
+
         exploredStates.insert(currentState);
 
         std::cout << std::vformat(stateString,
