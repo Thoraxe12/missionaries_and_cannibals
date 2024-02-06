@@ -1,3 +1,0 @@
-C:\Users\thora\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\missionaries_and_cannibals.dir/objects.a
-C:\Users\thora\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\missionaries_and_cannibals.dir/objects.a @CMakeFiles\missionaries_and_cannibals.dir\objects1.rsp
-C:\Users\thora\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\missionaries_and_cannibals.dir/objects.a -Wl,--no-whole-archive -o missionaries_and_cannibals.exe -Wl,--out-implib,libmissionaries_and_cannibals.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\missionaries_and_cannibals.dir\linkLibs.rsp
